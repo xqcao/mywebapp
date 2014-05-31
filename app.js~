@@ -1,0 +1,67 @@
+/**
+ * Module dependencies.
+ */
+
+var express = require('express');
+var http = require('http');
+var path = require('path');
+var app = express();
+
+// all environments
+app.set('port', process.env.PORT || 8000);
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'hjs');
+app.use(express.favicon());
+app.use(express.logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded());
+app.use(express.methodOverride());
+app.use(app.router);
+app.use(require('less-middleware')({ src: path.join(__dirname, 'public') }));
+app.use(express.static(path.join(__dirname, 'public')));
+// development only
+if ('development' == app.get('env')) {
+  app.use(express.errorHandler());
+}
+function login2(AA,res){
+    var myresult ="";
+    var child = require("child_process");
+    var binaddress ="./vectors.bin"; 
+    var giveword = req.body.nameword;
+    var TopNo = req.body.topNo;
+    var mycmd = "java -jar word2vec.jar" +" "+binaddress +" "+ giveword +" " + TopNo;
+    run = child.exec(mycmd, function (error, stdout, stderr) {
+	    if (error != null) {
+	      		console.log('exec error: ' + error);
+	    	}
+	    //console.log('Child Process STDOUT: '+stdout);
+              myresult = stdout;
+	console.log('the myresult value is: '+myresult);		
+	   //return myresult;
+      }); 
+    setTimeout(function() {    
+     console.log('out side of the myresult value is: '+myresult);    
+	return myresult +"!";},2000);	
+}
+app.get('/',function(req,res){
+	res.render("index.hjs",{abc: "please input the word and top number"+"\n",ddd: req.ip+"\n",ttt:Date.now()});
+});
+app.post('/login',function(req,res){
+
+        var str=login2(req,res);
+/*       setTimeout(function() {
+          console.log("hello world");
+           res.render("index.hjs",{abc: str+"."})
+        }, 2000);
+*/
+
+       console.log("post section"+str);
+	res.render("index.hjs",{abc:str+"\n",ddd: req.ip});
+       //res.render("index.hjs",{abc: login2(req, res)+"\n"});
+
+});
+http.createServer(app).listen(app.get('port'), function(){
+  console.log('Express server listening on port ' + app.get('port'));
+  //console.log("this is end: "+myresult);
+});    
+	  
