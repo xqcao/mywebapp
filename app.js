@@ -6,6 +6,8 @@ var express = require('express');
 var http = require('http');
 var path = require('path');
 var app = express();
+var mongoose = require('mongoose');
+
 
 // all environments
 app.set('port', process.env.PORT || 8000);
@@ -22,6 +24,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // development only
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
+  mongoose.connect('mongodb://localhost/fbdemo');
 }
 //var now = new Date();
 function getDateTime() {
@@ -49,12 +52,20 @@ function getDateTime() {
 
 }
 
+var Schema = new mongoose.Schema({
+	//_id:String,
+	give_word:String,
+	give_TopNo:String,
+        visit_date:String,
+	visit_ip:String
+});
 
+
+var user = mongoose.model('evm',Schema);
 
 
 
 app.get('/',function(req,res){
-	//res.render("index.hjs",{abc: "please input the word and top number"+"\n",ddd: req.ip+"\n",ttt:now.toTimeString()});
 res.render("index.hjs",{abc: "please input the word and top number"+"\n",ddd: req.ip+"\n",ttt:getDateTime()});
 });
 app.post('/login',function(req,res){
@@ -69,6 +80,18 @@ app.post('/login',function(req,res){
 	      		console.log('exec error: ' + error);
 	    	}
         myresult = stdout;
+        
+        new user({
+		//_id  :Schema.ObjectId,
+		give_word :req.body.nameword,
+		give_TopNo  :req.body.topNo,
+		visit_date:getDateTime(),
+		visit_ip:req.ip
+
+	}).save(function(err,doc){
+	    if(err) res.json(err);
+		//else res.send("successfully inserted");
+	});
 	res.render("index.hjs",{abc: myresult + "\n",ddd: req.ip,ttt:getDateTime()});  
       }); 
 /*
